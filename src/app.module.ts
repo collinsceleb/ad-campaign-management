@@ -12,7 +12,6 @@ import { UsersModule } from './modules/users/users.module';
 import { VerificationsModule } from './modules/verifications/verifications.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
-import { LocationModule } from './modules/location/location.module';
 import { CampaignStatusModule } from './modules/campaign-status/campaign-status.module';
 import { CampaignLocationModule } from './modules/campaign-location/campaign-location.module';
 
@@ -53,7 +52,6 @@ import { CampaignLocationModule } from './modules/campaign-location/campaign-loc
     VerificationsModule,
     AuthModule,
     CampaignModule,
-    LocationModule,
     CampaignStatusModule,
     CampaignLocationModule,
   ],
