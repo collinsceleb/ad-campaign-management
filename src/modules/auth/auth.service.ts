@@ -106,7 +106,7 @@ export class AuthService {
       );
     }
   }
-  async getUser(id: string): Promise<User> {
+  async getUser(id: number): Promise<User> {
     try {
       if (typeof id !== 'string') {
         throw new BadRequestException('Id must be a string');
@@ -129,7 +129,7 @@ export class AuthService {
   }
 
   // Soft Delete
-  async deleteUser(id: string, reason?: string): Promise<{ message: string }> {
+  async deleteUser(id: number, reason?: string): Promise<{ message: string }> {
     try {
       if (typeof id !== 'string') {
         throw new BadRequestException('Id must be a string');
@@ -189,29 +189,19 @@ export class AuthService {
       );
     }
   }
-  async getUserById(id: string): Promise<User> {
+  async getUserById(id: number): Promise<User> {
     try {
-      // if (!Types.ObjectId.isValid(id)) {
-      //   throw new BadRequestException('Invalid user ID');
-      // }
       const user = await this.authRepository.findOne({ where: { id } });
       if (!user) {
         throw new NotFoundException('User not found');
       }
       return user;
     } catch (error) {
-      if (error.name === 'BSONError') {
-        throw new BadRequestException(
-          'Invalid user ID provided',
-          error.message,
-        );
-      } else {
-        this.logger.error('Error getting user by ID:', error.message);
-        throw new InternalServerErrorException(
-          'An error occurred while fetching user by ID. Please check server logs for details.',
-          error.message,
-        );
-      }
+      this.logger.error('Error getting user by ID:', error.message);
+      throw new InternalServerErrorException(
+        'An error occurred while fetching user by ID. Please check server logs for details.',
+        error.message,
+      );
     }
   }
 }

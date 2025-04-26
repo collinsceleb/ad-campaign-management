@@ -57,18 +57,16 @@ export class UsersService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      const { email, username, password, lastName, firstName } = createUserDto;
+      const { email, password } = createUserDto;
       if (!isEmail(email)) {
         throw new BadRequestException('Invalid email format');
       }
-      await this.checkUserExists({ email, username });
+      await this.checkUserExists({ email });
       const user = queryRunner.manager.create(User, {
         email,
-        username,
         password: password,
-        firstName,
-        lastName,
         emailStatus: RecordStatus.UNVERIFIED,
+        profileStatus: RecordStatus.UNCOMPLETED,
       });
       await user.hashPassword();
       await queryRunner.manager.save(User, user);
@@ -110,10 +108,12 @@ export class UsersService {
       const cachedUser: User = await this.cacheManager.get(`user:${email}`);
       let storedUser: User;
       if (cachedUser) {
-        const cachedUserData = this.usersRepository.create(cachedUser);
+        const cachedUserData = queryRunner.manager.create(User, cachedUser);
         storedUser = cachedUserData;
       } else {
-        storedUser = await this.usersRepository.findOne({ where: { email } });
+        storedUser = await queryRunner.manager.findOne(User, {
+          where: { email },
+        });
         if (storedUser) {
           await this.cacheManager.set(
             `user:${storedUser.email}`,
@@ -363,16 +363,12 @@ export class UsersService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      const { email, username } = checkUserDto;
-      const [emailCheck, usernameCheck] = await Promise.all([
-        this.usersRepository.findOne({ where: { email } }),
-        this.usersRepository.findOne({ where: { username } }),
-      ]);
+      const { email } = checkUserDto;
+      const emailCheck = await queryRunner.manager.findOne(User, {
+        where: { email },
+      });
       if (emailCheck) {
         throw new BadRequestException('Email already exists');
-      }
-      if (usernameCheck) {
-        throw new BadRequestException('Username already exists');
       }
       await queryRunner.commitTransaction();
       return false;

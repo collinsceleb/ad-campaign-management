@@ -10,11 +10,8 @@ import {
 
 export enum RecordStatus {
   ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
   DELETED = 'DELETED',
   REVOKED = 'REVOKED',
-  DRAFT = 'DRAFT',
-  PENDING = 'PENDING',
   REJECTED = 'REJECTED',
   SUSPENDED = 'SUSPENDED',
   VERIFIED = 'VERIFIED',
@@ -22,14 +19,17 @@ export enum RecordStatus {
   WITHDRAWN = 'WITHDRAWN',
   INACTIVE = 'INACTIVE',
   LOCKED = 'LOCKED',
+
+  COMPLETED = 1,
+  UNCOMPLETED = 2,
 }
 
 export class BaseStatus {
   @Column({ nullable: true })
-  createdBy: string;
+  createdBy: number;
 
   @Column({ nullable: true })
-  updatedBy: string;
+  updatedBy: number;
 
   @Column({ type: 'enum', enum: RecordStatus, default: RecordStatus.ACTIVE })
   @Index()
@@ -39,7 +39,7 @@ export class BaseStatus {
   statusChangedAt: Date;
 
   @Column({ nullable: true })
-  statusChangedBy: string;
+  statusChangedBy: number;
 
   @Column({ type: 'text', nullable: true })
   statusChangeReason?: string;

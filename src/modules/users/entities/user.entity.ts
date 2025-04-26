@@ -8,14 +8,11 @@ import {
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid', {
+  @PrimaryGeneratedColumn({
     name: 'id',
     primaryKeyConstraintName: 'PK_user_id',
   })
-  id: string;
-
-  @Column('varchar', { length: 255, nullable: false, unique: true })
-  username: string;
+  id: number;
 
   @Column('varchar', { length: 255, nullable: false, unique: true })
   email: string;
@@ -30,8 +27,8 @@ export class User {
   @Column({ name: 'last_name' })
   lastName: string;
 
-  @Column({ name: 'profile_picture', nullable: true })
-  profilePicture: string;
+  @Column({ name: 'phone_number', nullable: true })
+  phoneNumber: string;
 
   @Column({ name: 'country', nullable: true, type: 'varchar' })
   country: string;
@@ -52,6 +49,13 @@ export class User {
     default: RecordStatus.UNVERIFIED,
   })
   emailStatus: RecordStatus;
+
+  @Column({
+    type: 'enum',
+    enum: RecordStatus,
+    default: RecordStatus.UNCOMPLETED,
+  })
+  profileStatus: RecordStatus;
 
   async hashPassword(): Promise<void> {
     this.password = await argon2.hash(this.password);
