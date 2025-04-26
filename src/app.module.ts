@@ -11,6 +11,10 @@ import { RedisStore } from 'connect-redis';
 import { UsersModule } from './modules/users/users.module';
 import { VerificationsModule } from './modules/verifications/verifications.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CampaignModule } from './modules/campaign/campaign.module';
+import { LocationModule } from './modules/location/location.module';
+import { CampaignStatusModule } from './modules/campaign-status/campaign-status.module';
+import { CampaignLocationModule } from './modules/campaign-location/campaign-location.module';
 
 @Module({
   imports: [
@@ -48,6 +52,10 @@ import { AuthModule } from './modules/auth/auth.module';
     UsersModule,
     VerificationsModule,
     AuthModule,
+    CampaignModule,
+    LocationModule,
+    CampaignStatusModule,
+    CampaignLocationModule,
   ],
   controllers: [],
   providers: [],
