@@ -8,6 +8,9 @@ import Redis from 'ioredis';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import { RedisStore } from 'connect-redis';
+import { UsersModule } from './modules/users/users.module';
+import { VerificationsModule } from './modules/verifications/verifications.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -42,6 +45,9 @@ import { RedisStore } from 'connect-redis';
       }),
       inject: [ConfigService],
     }),
+    UsersModule,
+    VerificationsModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
