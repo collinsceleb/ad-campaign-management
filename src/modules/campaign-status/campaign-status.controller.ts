@@ -1,34 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+} from '@nestjs/common';
 import { CampaignStatusService } from './campaign-status.service';
 import { CreateCampaignStatusDto } from './dto/create-campaign-status.dto';
 import { UpdateCampaignStatusDto } from './dto/update-campaign-status.dto';
+import { Request } from 'express';
 
 @Controller('campaign-status')
 export class CampaignStatusController {
   constructor(private readonly campaignStatusService: CampaignStatusService) {}
 
   @Post()
-  create(@Body() createCampaignStatusDto: CreateCampaignStatusDto) {
-    return this.campaignStatusService.create(createCampaignStatusDto);
+  async createStatus(
+    @Req() request: Request,
+    @Body() createCampaignStatusDto: CreateCampaignStatusDto,
+  ) {
+    return await this.campaignStatusService.createStatus(
+      request,
+      createCampaignStatusDto,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.campaignStatusService.findAll();
+  async fetchAllStatuses(@Req() request: Request) {
+    return await this.campaignStatusService.fetchAllStatuses(request);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.campaignStatusService.findOne(+id);
+  async fetchStatusById(@Req() request: Request, @Param('id') id: number) {
+    return await this.campaignStatusService.fetchStatusById(request, id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCampaignStatusDto: UpdateCampaignStatusDto) {
-    return this.campaignStatusService.update(+id, updateCampaignStatusDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.campaignStatusService.remove(+id);
+  async updateStatus(
+    @Req() request: Request,
+    @Param('id') id: number,
+    @Body() updateCampaignStatusDto: UpdateCampaignStatusDto,
+  ) {
+    return await this.campaignStatusService.updateStatus(
+      request,
+      id,
+      updateCampaignStatusDto,
+    );
   }
 }
