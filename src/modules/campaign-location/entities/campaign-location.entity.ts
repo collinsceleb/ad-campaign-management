@@ -17,7 +17,7 @@ export class CampaignLocation {
   })
   id: number;
 
-  @Column('varchar', { length: 255, nullable: false })
+  @Column('varchar', { length: 255, nullable: false, unique: true })
   name: string;
 
   @ManyToOne(() => CampaignStatus, (status) => status.location)

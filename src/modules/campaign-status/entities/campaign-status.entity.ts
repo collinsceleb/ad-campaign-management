@@ -16,7 +16,7 @@ export class CampaignStatus {
     primaryKeyConstraintName: 'PK_campaign_status_id',
   })
   id: number;
-  @Column('varchar', { length: 255, nullable: false })
+  @Column('varchar', { length: 255, nullable: false, unique: true})
   name: string;
 
   @OneToMany(() => CampaignLocation, (location) => location.status)

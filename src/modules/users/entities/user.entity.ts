@@ -1,4 +1,10 @@
-import { Check, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Check,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import * as argon2 from 'argon2';
 import { Exclude } from 'class-transformer';
 import {
