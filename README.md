@@ -31,3 +31,5 @@ Redis — Caching
 Paystack — Payment integration
 
 SendGrid — Email delivery
+
+NOTE: Caching was not fully used on the application due to time constraint.
