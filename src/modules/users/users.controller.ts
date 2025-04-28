@@ -6,6 +6,7 @@ import {
   ClassSerializerInterceptor,
   UseInterceptors,
   SerializeOptions,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,7 +17,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateAuthDto } from '../auth/dto/create-auth.dto';
 import { TokenResponse } from '../../common/class/token-response/token-response';
 import { VerifyEmailDto } from './dto/verify-email.dto';
-import { Request } from 'express';
+import e, { Request, Response } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -59,8 +60,8 @@ export class UsersController {
   async login(
     @Body() createAuthDto: CreateAuthDto,
     @Req() request: Request,
-
-  ): Promise<TokenResponse> {
-    return await this.usersService.login(createAuthDto, request);
+    @Res() response: Response,
+  ): Promise<e.Response<any, Record<string, any>>> {
+    return await this.usersService.login(createAuthDto, request, response);
   }
 }

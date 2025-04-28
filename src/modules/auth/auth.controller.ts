@@ -8,12 +8,13 @@ import {
   Delete,
   UseGuards,
   Req,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth/jwt-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { Request } from 'express';
+import e, { Request, Response } from 'express';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 
 @UseGuards(JwtAuthGuard)
@@ -30,8 +31,10 @@ export class AuthController {
     return await this.authService.changePassword(changePasswordDto, request);
   }
   @Post('logout')
-  async logout(): Promise<{ message: string }> {
-    return await this.authService.logout();
+  async logout(
+    @Res() response: Response,
+  ): Promise<e.Response<any, Record<string, any>>> {
+    return await this.authService.logout(response);
   }
   @Get('get-all')
   async getAllUsers(): Promise<User[]> {

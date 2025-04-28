@@ -17,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RecordStatus } from '../../common/entities/base-status.entity';
-import { Request } from 'express';
+import e, { Request, Response } from 'express';
 import { validate as uuidValidate } from 'uuid';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 import {
@@ -82,9 +82,16 @@ export class AuthService {
       await queryRunner.release();
     }
   }
-  async logout(): Promise<{ message: string }> {
+  async logout(
+    response: Response,
+  ): Promise<e.Response<any, Record<string, any>>> {
     try {
-      return { message: 'Logged out successfully' };
+      response.clearCookie('access_token', { httpOnly: true, secure: true }); // Cookie name is `access_token` by default
+
+      // Return success message
+      return response.status(200).json({
+        message: 'Logged out successfully!',
+      });
     } catch (e) {
       console.error('Error logging out user:', e.message);
       throw new InternalServerErrorException(

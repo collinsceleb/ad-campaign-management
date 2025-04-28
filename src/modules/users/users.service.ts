@@ -22,7 +22,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateAuthDto } from '../auth/dto/create-auth.dto';
 import { TokenResponse } from '../../common/class/token-response/token-response';
-import { Request } from 'express';
+import e, { Request, Response } from 'express';
 import * as crypto from 'node:crypto';
 import { JwtPayload } from '../../common/class/jwt-payload/jwt-payload';
 import { JwtService } from '@nestjs/jwt';
@@ -299,7 +299,8 @@ export class UsersService {
   async login(
     createAuthDto: CreateAuthDto,
     request: Request,
-  ): Promise<TokenResponse> {
+    response: Response,
+  ): Promise<e.Response<any, Record<string, any>>> {
     const queryRunner = this.datasource.createQueryRunner();
     try {
       await queryRunner.connect();
@@ -340,12 +341,19 @@ export class UsersService {
       existingUser.lastLogin = new Date();
       await queryRunner.manager.save(existingUser);
       const tokenDetails = await this.generateTokens(existingUser, request);
+      response.cookie('access_token', tokenDetails.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 3600000, // 1 hour
+      });
       await queryRunner.commitTransaction();
-      return {
+      return response.status(200).json({
         accessToken: tokenDetails.accessToken,
         session: request.session,
         sessionId: request.session.id,
-      };
+        message: 'Logged in successfully',
+      });
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error('Error logging in user:', error.message);
