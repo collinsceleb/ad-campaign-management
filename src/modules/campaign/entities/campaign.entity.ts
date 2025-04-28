@@ -5,13 +5,14 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
-  ManyToOne,
+  ManyToOne, OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { CampaignStatus } from '../../campaign-status/entities/campaign-status.entity';
 import { CampaignLocation } from '../../campaign-location/entities/campaign-location.entity';
 import { User } from '../../users/entities/user.entity';
+import { Payment } from '../../payments/entities/payment.entity';
 
 @Entity('campaigns')
 export class Campaign {
@@ -30,7 +31,7 @@ export class Campaign {
   @Column({ name: 'to', nullable: true, type: 'timestamptz' })
   to: Date;
 
-  @ManyToOne(() => CampaignStatus, (status) => status.campaign)
+  @ManyToOne(() => CampaignStatus, (status) => status.campaigns)
   @JoinColumn({ name: 'status_id' })
   status: CampaignStatus;
 
@@ -64,6 +65,9 @@ export class Campaign {
 
   @Column('simple-array')
   banners: string[];
+
+  @OneToMany(() => Payment, (payment) => payment.campaign)
+  payments: Payment[]
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

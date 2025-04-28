@@ -10,7 +10,10 @@ import { DataSource } from 'typeorm';
 import { CampaignLocation } from './entities/campaign-location.entity';
 import { Request } from 'express';
 import { User } from '../users/entities/user.entity';
-import { CampaignStatus } from '../campaign-status/entities/campaign-status.entity';
+import {
+  CampaignStatus,
+  CampaignStatusEnum,
+} from '../campaign-status/entities/campaign-status.entity';
 
 @Injectable()
 export class CampaignLocationService {
@@ -41,7 +44,7 @@ export class CampaignLocationService {
       const campaignStatusName = status;
       if (campaignStatusName) {
         assignedStatus = await queryRunner.manager.findOne(CampaignStatus, {
-          where: { name: campaignStatusName as unknown as string },
+          where: { name: campaignStatusName as unknown as CampaignStatusEnum },
         });
         if (!assignedStatus) {
           throw new BadRequestException(
@@ -50,7 +53,7 @@ export class CampaignLocationService {
         }
       } else {
         assignedStatus = await queryRunner.manager.findOne(CampaignStatus, {
-          where: { name: 'Inactive' },
+          where: { name: CampaignStatusEnum.Inactive },
         });
         if (!assignedStatus) {
           throw new BadRequestException(
@@ -172,7 +175,7 @@ export class CampaignLocationService {
         const campaignStatus = await queryRunner.manager.findOne(
           CampaignStatus,
           {
-            where: { name: status as unknown as string },
+            where: { name: status as unknown as CampaignStatusEnum },
           },
         );
         if (!campaignStatus) {

@@ -20,7 +20,7 @@ export class CampaignLocation {
   @Column('varchar', { length: 255, nullable: false, unique: true })
   name: string;
 
-  @ManyToOne(() => CampaignStatus, (status) => status.location)
+  @ManyToOne(() => CampaignStatus, (status) => status.locations)
   @JoinColumn({ name: 'status_id' })
   status: CampaignStatus;
 

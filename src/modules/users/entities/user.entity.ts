@@ -12,6 +12,7 @@ import {
   RecordStatus,
 } from '../../../common/entities/base-status.entity';
 import { Campaign } from '../../campaign/entities/campaign.entity';
+import { Payment } from '../../payments/entities/payment.entity';
 
 @Entity('users')
 export class User {
@@ -63,6 +64,9 @@ export class User {
     default: RecordStatus.UNCOMPLETED,
   })
   profileStatus: RecordStatus;
+
+  @OneToMany(() => Payment, (payment) => payment.user)
+  payments: Payment[];
 
   @OneToMany(() => Campaign, (campaign) => campaign.owner)
   campaign: Campaign;

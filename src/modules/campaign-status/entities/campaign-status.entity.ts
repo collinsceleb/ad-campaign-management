@@ -8,7 +8,19 @@ import {
 } from 'typeorm';
 import { CampaignLocation } from '../../campaign-location/entities/campaign-location.entity';
 import { Campaign } from '../../campaign/entities/campaign.entity';
+import { Payment } from '../../payments/entities/payment.entity';
 
+export enum CampaignStatusEnum {
+  Draft = 'Draft',
+  Active = 'Active',
+  Inactive = 'Inactive',
+  Completed = 'Completed',
+  Running = 'Running',
+  Paid = 'Paid',
+  Pending = 'Pending',
+  Failed = 'Failed',
+  Success = 'success',
+}
 @Entity('campaign_status')
 export class CampaignStatus {
   @PrimaryGeneratedColumn({
@@ -16,14 +28,17 @@ export class CampaignStatus {
     primaryKeyConstraintName: 'PK_campaign_status_id',
   })
   id: number;
-  @Column('varchar', { length: 255, nullable: false, unique: true})
-  name: string;
+  @Column({ type: 'enum', enum: CampaignStatusEnum, nullable: false })
+  name: CampaignStatusEnum;
 
   @OneToMany(() => CampaignLocation, (location) => location.status)
-  location: CampaignLocation;
+  locations: CampaignLocation[];
 
   @OneToMany(() => Campaign, (campaign) => campaign.status)
-  campaign: Campaign;
+  campaigns: Campaign[];
+
+  @OneToMany(() => Payment, (payment) => payment.status)
+  payments: Payment[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

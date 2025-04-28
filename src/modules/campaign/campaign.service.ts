@@ -7,16 +7,21 @@ import {
 } from '@nestjs/common';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Campaign } from './entities/campaign.entity';
-import { DataSource, Repository } from 'typeorm';
-import { CampaignStatus } from '../campaign-status/entities/campaign-status.entity';
+import { Between, DataSource, Repository } from 'typeorm';
+import {
+  CampaignStatus,
+  CampaignStatusEnum,
+} from '../campaign-status/entities/campaign-status.entity';
 import { CampaignLocation } from '../campaign-location/entities/campaign-location.entity';
 import { Request } from 'express';
 import { User } from '../users/entities/user.entity';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { CampaignResponse } from '../../common/class/campaign-response/campaign-response';
+import { HelperService } from '../../common/utils/helper/helper.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CampaignService {
@@ -25,11 +30,8 @@ export class CampaignService {
   constructor(
     @InjectRepository(Campaign)
     private readonly campaignRepository: Repository<Campaign>,
-    @InjectRepository(CampaignStatus)
-    private readonly campaignStatusRepository: Repository<CampaignStatus>,
-    @InjectRepository(CampaignLocation)
-    private readonly campaignLocationRepository: Repository<CampaignLocation>,
     private readonly dataSource: DataSource,
+    private readonly helperService: HelperService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly configService: ConfigService,
   ) {}
@@ -77,7 +79,7 @@ export class CampaignService {
       const campaignStatusName = status;
       if (campaignStatusName) {
         assignedStatus = await queryRunner.manager.findOne(CampaignStatus, {
-          where: { name: campaignStatusName as unknown as string },
+          where: { name: campaignStatusName as unknown as CampaignStatusEnum },
         });
         if (!assignedStatus) {
           throw new BadRequestException(
@@ -86,7 +88,7 @@ export class CampaignService {
         }
       } else {
         assignedStatus = await queryRunner.manager.findOne(CampaignStatus, {
-          where: { name: 'Draft' },
+          where: { name: CampaignStatusEnum.Draft },
         });
         if (!assignedStatus) {
           throw new BadRequestException(
@@ -294,7 +296,7 @@ export class CampaignService {
         const campaignStatus = await queryRunner.manager.findOne(
           CampaignStatus,
           {
-            where: { name: status as unknown as string },
+            where: { name: status as unknown as CampaignStatusEnum },
           },
         );
         if (!campaignStatus) {
@@ -397,5 +399,62 @@ export class CampaignService {
     } finally {
       await queryRunner.release();
     }
+  }
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async sendTwoDaysBeforeEndReminder() {
+    try {
+      const today = new Date();
+      const twoDaysLater = new Date();
+      twoDaysLater.setDate(today.getDate() + 2);
+
+      const from = new Date(twoDaysLater);
+      from.setHours(0, 0, 0, 0);
+      const to = new Date(twoDaysLater);
+      to.setHours(23, 59, 59, 999);
+
+      const campaigns = await this.campaignRepository.find({
+        where: {
+          status: CampaignStatusEnum.Running as unknown as CampaignStatus,
+          to: Between(from, to),
+        },
+        relations: ['owner'],
+      });
+
+      for (const campaign of campaigns) {
+        if (campaign.owner?.email) {
+          await this.sendReminderEmail(
+            campaign.owner.email,
+            'Important Reminder',
+            (name, to) =>
+              `Your campaign "${name}" will end in 2 days on ${to.toLocaleDateString()}. Please review your campaign status and make any final adjustments before it concludes.`,
+            campaign.name,
+            campaign.to,
+          );
+        }
+      }
+
+      if (campaigns.length) {
+        console.log(
+          `[CronJob] Sent ${campaigns.length} campaign reminder email(s) ✅`,
+        );
+      }
+    } catch (error) {
+      console.error('Error sending reminder emails:', error);
+      throw new InternalServerErrorException(
+        'An error occurred while sending reminder emails. Please check server logs for details.',
+        error.message,
+      );
+    }
+  }
+
+  private async sendReminderEmail(
+    email: string,
+    subject: string,
+    messageTemplate: (name: string, to: Date) => string,
+    name?: string,
+    to?: Date,
+  ) {
+    const message = messageTemplate(name, to);
+    await this.helperService.sendEmail(email, message, subject);
   }
 }
