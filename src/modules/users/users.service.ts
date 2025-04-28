@@ -345,7 +345,7 @@ export class UsersService {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 3600000, // 1 hour
+        maxAge: this.configService.get<number>('JWT_ACCESS_EXPIRATION_TIME'),
       });
       await queryRunner.commitTransaction();
       return response.status(200).json({

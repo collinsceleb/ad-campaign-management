@@ -88,7 +88,6 @@ export class AuthService {
     try {
       response.clearCookie('access_token', { httpOnly: true, secure: true }); // Cookie name is `access_token` by default
 
-      // Return success message
       return response.status(200).json({
         message: 'Logged out successfully!',
       });
@@ -100,69 +99,6 @@ export class AuthService {
       );
     }
   }
-  async getAllUsers(): Promise<User[]> {
-    try {
-      return await this.authRepository.find();
-    } catch (e) {
-      console.error('Error finding all users:', e.message);
-      throw new InternalServerErrorException(
-        'An error occurred while finding all users. Please check server logs for details.',
-        e.message,
-      );
-    }
-  }
-  async getUser(id: number): Promise<User> {
-    try {
-      if (typeof id !== 'string') {
-        throw new BadRequestException('Id must be a string');
-      }
-      if (!uuidValidate(id)) {
-        throw new BadRequestException('Invalid UUID format');
-      }
-      const user = await this.authRepository.findOne({ where: { id } });
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-      return user;
-    } catch (e) {
-      console.error('Error finding user:', e.message);
-      throw new InternalServerErrorException(
-        'An error occurred while finding user. Please check server logs for details.',
-        e.message,
-      );
-    }
-  }
-
-  // Soft Delete
-  async deleteUser(id: number, reason?: string): Promise<{ message: string }> {
-    try {
-      if (typeof id !== 'string') {
-        throw new BadRequestException('Id must be a string');
-      }
-      if (!uuidValidate(id)) {
-        throw new BadRequestException('Invalid UUID format');
-      }
-      const user = await this.authRepository.findOne({ where: { id } });
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-      user.meta.status = RecordStatus.DELETED;
-      user.meta.updatedBy = user.id;
-      user.meta.updatedAt = new Date();
-      user.meta.statusChangedBy = user.id;
-      user.meta.statusChangedAt = new Date();
-      user.meta.statusChangeReason = reason;
-      await this.authRepository.save(user);
-      return { message: 'User deleted successfully' };
-    } catch (e) {
-      console.error('Error deleting user:', e.message);
-      throw new InternalServerErrorException(
-        'An error occurred while deleting user. Please check server logs for details.',
-        e.message,
-      );
-    }
-  }
-
   async validateUser(createAuthDto: CreateAuthDto): Promise<User | null> {
     try {
       const { email, password } = createAuthDto;

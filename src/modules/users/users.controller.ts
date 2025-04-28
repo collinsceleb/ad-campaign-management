@@ -15,7 +15,6 @@ import { Verification } from '../verifications/entities/verification.entity';
 import { User } from './entities/user.entity';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateAuthDto } from '../auth/dto/create-auth.dto';
-import { TokenResponse } from '../../common/class/token-response/token-response';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import e, { Request, Response } from 'express';
 

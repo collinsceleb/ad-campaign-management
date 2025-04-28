@@ -36,18 +36,7 @@ export class AuthController {
   ): Promise<e.Response<any, Record<string, any>>> {
     return await this.authService.logout(response);
   }
-  @Get('get-all')
-  async getAllUsers(): Promise<User[]> {
-    return await this.authService.getAllUsers();
-  }
-  @Get('get-user/:id')
-  async getUser(@Param('id') id: number): Promise<User> {
-    return await this.authService.getUser(id);
-  }
-  @Delete('delete-user/:id')
-  async deleteUser(@Param('id') id: number): Promise<{ message: string }> {
-    return await this.authService.deleteUser(id);
-  }
+
   @Get(':id')
   async getUserById(id: number): Promise<User> {
     return await this.authService.getUserById(id);
