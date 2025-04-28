@@ -13,7 +13,6 @@ export class VerificationsService {
   constructor(
     @InjectRepository(Verification)
     private readonly verificationRepository: Repository<Verification>,
-    // private readonly emailService: EmailService,
     private helperService: HelperService,
     private readonly datasource: DataSource,
   ) {}

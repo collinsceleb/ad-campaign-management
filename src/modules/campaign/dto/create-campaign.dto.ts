@@ -1,5 +1,5 @@
 import {
-  ArrayMinSize,
+  ArrayMinSize, ArrayNotEmpty,
   IsArray,
   IsDateString,
   IsNotEmpty,
@@ -9,26 +9,34 @@ import {
 } from 'class-validator';
 import { CampaignLocation } from '../../campaign-location/entities/campaign-location.entity';
 import { CampaignStatus } from '../../campaign-status/entities/campaign-status.entity';
+import { Type } from 'class-transformer';
 
 export class CreateCampaignDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @IsDateString()
+  @IsNotEmpty()
+  @Type(() => Date)
   from: Date;
 
-  @IsDateString()
+  @IsNotEmpty()
+  @Type(() => Date)
   to: Date;
+
+  @IsNumber()
+  @Type(() => Number)
+  amount: number;
 
   @IsOptional()
   status?: CampaignStatus;
 
-  @IsNumber()
-  amount: number;
+  // @IsNumber()
+  // amount: number;
 
   @IsArray()
-  @ArrayMinSize(1)
-  @IsNotEmpty()
+  @ArrayNotEmpty()
   @IsString({ each: true })
+  @Type(() => String)
   locations: CampaignLocation[];
 }

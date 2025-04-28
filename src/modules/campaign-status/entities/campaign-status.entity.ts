@@ -9,6 +9,7 @@ import {
 import { CampaignLocation } from '../../campaign-location/entities/campaign-location.entity';
 import { Campaign } from '../../campaign/entities/campaign.entity';
 import { Payment } from '../../payments/entities/payment.entity';
+import { User } from '../../users/entities/user.entity';
 
 export enum CampaignStatusEnum {
   Draft = 'Draft',
@@ -29,7 +30,7 @@ export class CampaignStatus {
   })
   id: number;
   @Column({ type: 'enum', enum: CampaignStatusEnum, nullable: false })
-  name: CampaignStatusEnum;
+  name: string;
 
   @OneToMany(() => CampaignLocation, (location) => location.status)
   locations: CampaignLocation[];
@@ -39,6 +40,9 @@ export class CampaignStatus {
 
   @OneToMany(() => Payment, (payment) => payment.status)
   payments: Payment[];
+
+  @OneToMany(() => User, (user) => user.status)
+  users: Payment[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

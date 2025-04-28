@@ -19,6 +19,11 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { RecordStatus } from '../../common/entities/base-status.entity';
 import { Request } from 'express';
 import { validate as uuidValidate } from 'uuid';
+import { UpdateUserDto } from '../users/dto/update-user.dto';
+import {
+  CampaignStatus,
+  CampaignStatusEnum,
+} from '../campaign-status/entities/campaign-status.entity';
 
 @Injectable()
 export class AuthService {
@@ -78,21 +83,14 @@ export class AuthService {
     }
   }
   async logout(): Promise<{ message: string }> {
-    const queryRunner = this.datasource.createQueryRunner();
     try {
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
-      await queryRunner.commitTransaction();
       return { message: 'Logged out successfully' };
     } catch (e) {
-      await queryRunner.rollbackTransaction();
       console.error('Error logging out user:', e.message);
       throw new InternalServerErrorException(
         'An error occurred while logging out user. Please check server logs for details.',
         e.message,
       );
-    } finally {
-      await queryRunner.release();
     }
   }
   async getAllUsers(): Promise<User[]> {
@@ -202,6 +200,50 @@ export class AuthService {
         'An error occurred while fetching user by ID. Please check server logs for details.',
         error.message,
       );
+    }
+  }
+  async updateProfile(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<{ user: User; message: string }> {
+    const queryRunner = this.datasource.createQueryRunner();
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      const { firstName, lastName } = updateUserDto;
+      const [user, status] = await Promise.all([
+        await queryRunner.manager.findOne(User, { where: { id } }),
+        await queryRunner.manager.findOne(CampaignStatus, {
+          where: { name: CampaignStatusEnum.Completed },
+        }),
+      ]);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      if (!status) {
+        throw new NotFoundException('Status not found');
+      }
+      user.firstName = firstName;
+      user.lastName = lastName;
+      user.meta.updatedBy = user.id;
+      user.meta.updatedAt = new Date();
+      user.meta.statusChangedBy = user.id;
+      user.meta.statusChangedAt = new Date();
+      user.meta.statusChangeReason = 'User updated';
+      user.status = status.id as unknown as CampaignStatus;
+
+      await queryRunner.manager.save(User, user);
+      await queryRunner.commitTransaction();
+      return { user, message: 'User updated successfully' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Error updating user:', error.message);
+      throw new InternalServerErrorException(
+        'An error occurred while updating user. Please check server logs for details.',
+        error.message,
+      );
+    } finally {
+      await queryRunner.release();
     }
   }
 }

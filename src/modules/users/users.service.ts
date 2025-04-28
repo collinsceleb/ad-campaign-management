@@ -343,7 +343,6 @@ export class UsersService {
       await queryRunner.commitTransaction();
       return {
         accessToken: tokenDetails.accessToken,
-        refreshToken: tokenDetails.refreshToken,
         session: request.session,
         sessionId: request.session.id,
       };
@@ -386,7 +385,6 @@ export class UsersService {
       await queryRunner.connect();
       await queryRunner.startTransaction();
       const accessJwtId = crypto.randomUUID();
-      const refreshJwtId = crypto.randomUUID();
       const payload: JwtPayload = {
         sub: user.id as unknown as User,
         email: user.email,
@@ -395,24 +393,9 @@ export class UsersService {
       const accessToken = this.jwtService.sign(payload, {
         expiresIn: `${this.JWT_ACCESS_EXPIRATION_TIME}ms`,
       });
-      const refreshTokenPayload: JwtPayload = {
-        sub: user.id as unknown as User,
-        email: user.email,
-        jwtId: refreshJwtId,
-      };
-      const token = this.jwtService.sign(refreshTokenPayload, {
-        expiresIn: `${this.JWT_EXPIRATION_TIME}ms`,
-      });
-      // await this.refreshTokenRepository.save(refreshToken);
-      await this.cacheManager.set(
-        `refresh_token_${token}`,
-        token,
-        this.REDIS_TTL_IN_MILLISECONDS,
-      );
       await queryRunner.commitTransaction();
       return {
         accessToken: accessToken,
-        refreshToken: token,
         session: request.session,
         sessionId: request.session.id,
       };

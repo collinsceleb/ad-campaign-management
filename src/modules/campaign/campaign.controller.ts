@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   Req,
   UseInterceptors,
@@ -28,15 +27,15 @@ import { CampaignResponse } from '../../common/class/campaign-response/campaign-
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
 
-  @Post()
-  @UseInterceptors(FilesInterceptor('banner'))
+  @Post('create')
+  @UseInterceptors(FilesInterceptor('banners', 5))
   async createCampaign(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() banners: Express.Multer.File[],
     @Req() request: Request,
     @Body() createCampaignDto: CreateCampaignDto,
   ): Promise<Campaign> {
     const uploadedUrls = await Promise.all(
-      files.map((file) => uploadToCloudinary(file)),
+      banners.map((banner) => uploadToCloudinary(banner)),
     );
     return await this.campaignService.createCampaign(
       request,
@@ -88,7 +87,7 @@ export class CampaignController {
   async extendCampaignToNewLocation(
     @Req() request: Request,
     @Param('campaignId') campaignId: number,
-    @Body() locationId: number,
+    @Body('locationId') locationId: number,
   ): Promise<Campaign> {
     return await this.campaignService.extendCampaignToNewLocation(
       request,

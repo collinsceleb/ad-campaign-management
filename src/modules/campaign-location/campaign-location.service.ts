@@ -164,8 +164,8 @@ export class CampaignLocationService {
       const location = await queryRunner.manager.findOne(CampaignLocation, {
         where: { id },
       });
-      if (location) {
-        throw new NotFoundException('Location already exists');
+      if (!location) {
+        throw new NotFoundException('Location not found');
       }
       const { name, status } = updateCampaignLocationDto;
       if (name) {

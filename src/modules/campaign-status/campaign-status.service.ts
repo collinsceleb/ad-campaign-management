@@ -5,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { CreateCampaignStatusDto } from './dto/create-campaign-status.dto';
 import { UpdateCampaignStatusDto } from './dto/update-campaign-status.dto';
-import { CampaignStatus } from './entities/campaign-status.entity';
+import {
+  CampaignStatus,
+  CampaignStatusEnum,
+} from './entities/campaign-status.entity';
 import { Request } from 'express';
 import { DataSource } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -139,7 +142,7 @@ export class CampaignStatusService {
       }
       const { name } = updateCampaignStatusDto;
       if (name) {
-        status.name = name;
+        status.name = name as CampaignStatusEnum;
       }
       await queryRunner.manager.save(CampaignStatus, status);
       await queryRunner.commitTransaction();

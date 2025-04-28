@@ -139,12 +139,6 @@ export class CampaignService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      // const [cachedCampaigns] = await this.cacheManager.get<Campaign[]>(
-      //   'campaigns',
-      // );
-      // if (cachedCampaigns) {
-      //   return cachedCampaigns;
-      // }
       const [campaigns, total] = await queryRunner.manager.findAndCount(
         Campaign,
         {
@@ -160,7 +154,7 @@ export class CampaignService {
           name: campaign.name,
           from: campaign.from,
           to: campaign.to,
-          status: campaign.status.name,
+          status: campaign.status.name as unknown as string,
           owner: {
             id: campaign.owner.id,
             email: campaign.owner.email,
@@ -192,6 +186,8 @@ export class CampaignService {
         'An error occurred while fetching campaigns. Please check server logs for details.',
         error.message,
       );
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -217,14 +213,14 @@ export class CampaignService {
         relations: ['owner', 'status', 'locations'],
       });
       if (!campaign) {
-        throw new Error('Campaign not found');
+        throw new NotFoundException('Campaign not found');
       }
       const data: CampaignResponse = {
         id: campaign.id,
         name: campaign.name,
         from: campaign.from,
         to: campaign.to,
-        status: campaign.status.name,
+        status: campaign.status.name as unknown as string,
         owner: {
           id: campaign.owner.id,
           email: campaign.owner.email,
@@ -330,11 +326,6 @@ export class CampaignService {
       }
       await queryRunner.manager.save(Campaign, campaign);
       await queryRunner.commitTransaction();
-      await this.cacheManager.set(
-        `campaign: ${campaign.id}`,
-        campaign,
-        this.REDIS_TTL_IN_MILLISECONDS,
-      );
       return campaign;
     } catch (error) {
       await queryRunner.rollbackTransaction();

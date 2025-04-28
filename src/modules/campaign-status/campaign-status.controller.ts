@@ -5,19 +5,22 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { CampaignStatusService } from './campaign-status.service';
 import { CreateCampaignStatusDto } from './dto/create-campaign-status.dto';
 import { UpdateCampaignStatusDto } from './dto/update-campaign-status.dto';
 import { Request } from 'express';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth/jwt-auth.guard';
+import { ProfileUpdatedGuard } from '../../common/guards/profile-updated/profile-updated.guard';
 
+@UseGuards(JwtAuthGuard, ProfileUpdatedGuard)
 @Controller('campaign-status')
 export class CampaignStatusController {
   constructor(private readonly campaignStatusService: CampaignStatusService) {}
 
-  @Post()
+  @Post('create')
   async createStatus(
     @Req() request: Request,
     @Body() createCampaignStatusDto: CreateCampaignStatusDto,

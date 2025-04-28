@@ -14,6 +14,7 @@ import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth/jwt-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Request } from 'express';
+import { UpdateUserDto } from '../users/dto/update-user.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('auth')
@@ -28,7 +29,7 @@ export class AuthController {
   ): Promise<{ user: User; message: string }> {
     return await this.authService.changePassword(changePasswordDto, request);
   }
-  @Post('logout/:uniqueDeviceId')
+  @Post('logout')
   async logout(): Promise<{ message: string }> {
     return await this.authService.logout();
   }
@@ -47,5 +48,13 @@ export class AuthController {
   @Get(':id')
   async getUserById(id: number): Promise<User> {
     return await this.authService.getUserById(id);
+  }
+
+  @Patch('update-profile/:id')
+  async updateProfile(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<{ message: string }> {
+    return await this.authService.updateProfile(id, updateUserDto);
   }
 }

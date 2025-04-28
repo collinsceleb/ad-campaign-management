@@ -2,6 +2,8 @@ import {
   Check,
   Column,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -13,6 +15,7 @@ import {
 } from '../../../common/entities/base-status.entity';
 import { Campaign } from '../../campaign/entities/campaign.entity';
 import { Payment } from '../../payments/entities/payment.entity';
+import { CampaignStatus } from '../../campaign-status/entities/campaign-status.entity';
 
 @Entity('users')
 export class User {
@@ -29,17 +32,11 @@ export class User {
   @Exclude()
   password: string;
 
-  @Column({ name: 'first_name' })
+  @Column({ name: 'first_name', nullable: true })
   firstName: string;
 
-  @Column({ name: 'last_name' })
+  @Column({ name: 'last_name', nullable: true })
   lastName: string;
-
-  @Column({ name: 'phone_number', nullable: true })
-  phoneNumber: string;
-
-  @Column({ name: 'country', nullable: true, type: 'varchar' })
-  country: string;
 
   @Column({ name: 'tries', nullable: false, default: 0 })
   @Check('tries >= 0')
@@ -58,12 +55,9 @@ export class User {
   })
   emailStatus: RecordStatus;
 
-  @Column({
-    type: 'enum',
-    enum: RecordStatus,
-    default: RecordStatus.UNCOMPLETED,
-  })
-  profileStatus: RecordStatus;
+  @ManyToOne(() => CampaignStatus, (status) => status.campaigns)
+  @JoinColumn({ name: 'status_id' })
+  status: CampaignStatus;
 
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];

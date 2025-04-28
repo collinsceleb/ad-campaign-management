@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   Req,
 } from '@nestjs/common';
@@ -15,15 +14,16 @@ import { UpdateCampaignLocationDto } from './dto/update-campaign-location.dto';
 import { Request } from 'express';
 import { CampaignLocation } from './entities/campaign-location.entity';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth/jwt-auth.guard';
+import { ProfileUpdatedGuard } from '../../common/guards/profile-updated/profile-updated.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ProfileUpdatedGuard)
 @Controller('campaign-location')
 export class CampaignLocationController {
   constructor(
     private readonly campaignLocationService: CampaignLocationService,
   ) {}
 
-  @Post()
+  @Post('create')
   async createLocation(
     @Req() request: Request,
     @Body() createCampaignLocationDto: CreateCampaignLocationDto,
