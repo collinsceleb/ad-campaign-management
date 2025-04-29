@@ -64,16 +64,16 @@ export class CampaignController {
     return await this.campaignService.fetchCampaignById(id);
   }
 
-  @UseInterceptors(FilesInterceptor('banner'))
+  @UseInterceptors(FilesInterceptor('banners', 5))
   @Patch(':id')
   async updateCampaign(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() banners: Express.Multer.File[],
     @Req() request: Request,
     @Param('id') id: number,
     @Body() updateCampaignDto: UpdateCampaignDto,
   ): Promise<Campaign> {
     const uploadedUrls = await Promise.all(
-      files.map((file) => uploadToCloudinary(file)),
+      banners.map((banner) => uploadToCloudinary(banner)),
     );
     return await this.campaignService.updateCampaign(
       request,
