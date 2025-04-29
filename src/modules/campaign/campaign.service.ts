@@ -413,7 +413,7 @@ export class CampaignService {
             campaign.owner.email,
             'Important Reminder',
             (name, to) =>
-              `Your campaign "${name}" will end in 2 days on ${to}. Please review your campaign status and make any final adjustments before it concludes.`,
+              `Your campaign with the name: ${name.toUpperCase()} will end in 2 days on ${to}. Please review your campaign status and make any final adjustments before it concludes.`,
             campaign.name,
             campaign.to,
           );
@@ -457,7 +457,7 @@ export class CampaignService {
             campaign.owner.email,
             'Important Reminder',
             (name, to) =>
-              `This is just to let you know that your campaign "${name}" has completed on  ${to}.`,
+              `This is just to let you know that your campaign with the name: ${name.toUpperCase()} has completed on  ${to}.`,
             campaign.name,
             campaign.to,
           );
