@@ -107,6 +107,16 @@ export class CampaignService {
         banners,
       });
       await queryRunner.manager.save(Campaign, newCampaign);
+      if (existingUser.email) {
+        await this.sendReminderEmail(
+          newCampaign.owner.email,
+          'New Campaign Created',
+          (name, to) =>
+            `A new campaign has been created with the name "${name}" which will end ${to.toLocaleDateString()}.`,
+          newCampaign.name,
+          newCampaign.to,
+        );
+      }
       await queryRunner.commitTransaction();
       await this.cacheManager.set(
         `campaign: ${newCampaign.id}`,
