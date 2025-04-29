@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CheckUserDto } from './dto/check-user.dto';
-import { RecordStatus } from 'src/common/entities/base-status.entity';
+import { RecordStatus } from '../../common/entities/base-status.entity';
 import { isEmail } from 'class-validator';
 import { DataSource, Repository } from 'typeorm';
 import { VerificationsService } from '../verifications/verifications.service';
@@ -29,8 +29,6 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
-  private readonly JWT_EXPIRATION_TIME =
-    this.configService.get<number>('JWT_EXPIRATION_TIME') * 1000;
   private readonly JWT_ACCESS_EXPIRATION_TIME =
     this.configService.get<number>('JWT_ACCESS_EXPIRATION_TIME') * 1000;
   private readonly VERIFICATION_RETRIES = this.configService.get<number>(
