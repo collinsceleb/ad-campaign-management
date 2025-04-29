@@ -108,21 +108,17 @@ export class CampaignService {
       });
       await queryRunner.manager.save(Campaign, newCampaign);
       if (existingUser.email) {
-        await this.sendReminderEmail(
+        await this.sendCampaignCreationEmail(
           newCampaign.owner.email,
           'New Campaign Created',
-          (name, to) =>
-            `A new campaign has been created with the name "${name}" which will end ${to.toLocaleDateString()}.`,
+          (name, from, to) =>
+            `A new campaign has been created with the name: ${name.toUpperCase()} which will start on ${from} end on ${to}.`,
           newCampaign.name,
+          newCampaign.from,
           newCampaign.to,
         );
       }
       await queryRunner.commitTransaction();
-      await this.cacheManager.set(
-        `campaign: ${newCampaign.id}`,
-        newCampaign,
-        this.REDIS_TTL_IN_MILLISECONDS,
-      );
       return newCampaign;
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -181,11 +177,6 @@ export class CampaignService {
           totalBudget: campaign.amount,
           banners: campaign.banners,
         }),
-      );
-      await this.cacheManager.set(
-        'campaigns',
-        data,
-        this.REDIS_TTL_IN_MILLISECONDS,
       );
       await queryRunner.commitTransaction();
       return { data, total, page, lastPage: Math.ceil(total / limit) };
@@ -247,11 +238,6 @@ export class CampaignService {
         totalBudget: campaign.amount,
         banners: campaign.banners,
       };
-      await this.cacheManager.set(
-        `campaign: ${id}`,
-        data,
-        this.REDIS_TTL_IN_MILLISECONDS,
-      );
       return { data };
     } catch (error) {
       console.error('Error fetching campaign by ID:', error);
@@ -427,7 +413,7 @@ export class CampaignService {
             campaign.owner.email,
             'Important Reminder',
             (name, to) =>
-              `Your campaign "${name}" will end in 2 days on ${to.toLocaleDateString()}. Please review your campaign status and make any final adjustments before it concludes.`,
+              `Your campaign "${name}" will end in 2 days on ${to}. Please review your campaign status and make any final adjustments before it concludes.`,
             campaign.name,
             campaign.to,
           );
@@ -471,7 +457,7 @@ export class CampaignService {
             campaign.owner.email,
             'Important Reminder',
             (name, to) =>
-              `This is just to let you know that your campaign "${name}" has completed on  ${to.toLocaleDateString()}.`,
+              `This is just to let you know that your campaign "${name}" has completed on  ${to}.`,
             campaign.name,
             campaign.to,
           );
@@ -499,6 +485,18 @@ export class CampaignService {
     to?: Date,
   ) {
     const message = messageTemplate(name, to);
+    await this.helperService.sendEmail(email, message, subject);
+  }
+
+  private async sendCampaignCreationEmail(
+    email: string,
+    subject: string,
+    messageTemplate: (name: string, from: Date, to: Date) => string,
+    name?: string,
+    from?: Date,
+    to?: Date,
+  ) {
+    const message = messageTemplate(name, from, to);
     await this.helperService.sendEmail(email, message, subject);
   }
 }
