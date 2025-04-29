@@ -93,7 +93,7 @@ describe('UsersService - register', () => {
 
   it('should register a new user and return user + verification code', async () => {
     const dto = {
-      email: 'collinsceleb21@gmail.com',
+      email: 'test@example.com',
       password: 'Curiosity123&',
     };
 
