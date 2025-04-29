@@ -6,10 +6,14 @@ import {
   Param,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { Request } from 'express';
+import { PaystackPayload } from '../../common/class/payment/paystack-payload/paystack-payload';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
@@ -23,8 +27,8 @@ export class PaymentsController {
   }
 
   @Post('webhook')
-  async webhook(@Body() payload: any) {
-    await this.paymentsService.handleWebhook(payload);
+  async webhook(@Body() payload: PaystackPayload, @Req() request: Request) {
+    await this.paymentsService.handleWebhook(payload, request);
     return { received: true };
   }
 

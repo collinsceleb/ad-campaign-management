@@ -2,13 +2,14 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException, UnauthorizedException,
 } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import * as crypto from 'node:crypto';
 import { Request } from 'express';
 import { Payment } from './entities/payment.entity';
 import { User } from '../users/entities/user.entity';
@@ -153,9 +154,18 @@ export class PaymentsService {
     }
   }
 
-  async handleWebhook(payload: PaystackPayload) {
+  async handleWebhook(payload: PaystackPayload, request: Request) {
     const { event, data } = payload;
 
+    const signature = request.headers['x-paystack-signature'];
+    const computed = crypto
+      .createHmac('sha512', this.PAYSTACK_SECRET_KEY)
+      .update(JSON.stringify(request.body))
+      .digest('hex');
+
+    if (signature !== computed) {
+      throw new UnauthorizedException('Invalid signature');
+    }
     if (event === 'charge.success') {
       const reference = data.reference;
       const verified = await this.verifyPayment(reference);
