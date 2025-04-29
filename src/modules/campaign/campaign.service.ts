@@ -8,7 +8,7 @@ import {
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { Campaign } from './entities/campaign.entity';
-import { Between, DataSource, Repository } from 'typeorm';
+import { Between, DataSource, LessThan, Repository } from 'typeorm';
 import {
   CampaignStatus,
   CampaignStatusEnum,
@@ -433,6 +433,49 @@ export class CampaignService {
       console.error('Error sending reminder emails:', error);
       throw new InternalServerErrorException(
         'An error occurred while sending reminder emails. Please check server logs for details.',
+        error.message,
+      );
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async autoCompleteCampaigns() {
+    try {
+      const today = new Date();
+
+      const campaigns = await this.campaignRepository.find({
+        where: {
+          status: CampaignStatusEnum.Running as unknown as CampaignStatus,
+          to: LessThan(today),
+        },
+        relations: ['owner'],
+      });
+
+      for (const campaign of campaigns) {
+        campaign.status =
+          CampaignStatusEnum.Completed as unknown as CampaignStatus;
+        await this.campaignRepository.save(campaign);
+
+        if (campaign.owner?.email) {
+          await this.sendReminderEmail(
+            campaign.owner.email,
+            'Important Reminder',
+            (name, to) =>
+              `This is just to let you know that your campaign "${name}" has completed on  ${to.toLocaleDateString()}.`,
+            campaign.name,
+            campaign.to,
+          );
+        }
+      }
+      if (campaigns.length) {
+        console.log(
+          `[CronJob] Auto-completed and notified ${campaigns.length} campaign(s) ✅`,
+        );
+      }
+    } catch (error) {
+      console.error('Error auto-completing campaigns:', error);
+      throw new InternalServerErrorException(
+        'An error occurred while auto-completing campaigns. Please check server logs for details.',
         error.message,
       );
     }
