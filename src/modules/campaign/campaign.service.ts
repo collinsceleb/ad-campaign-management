@@ -112,7 +112,7 @@ export class CampaignService {
           newCampaign.owner.email,
           'New Campaign Created',
           (name, from, to) =>
-            `A new campaign has been created with the name: ${name.toUpperCase()} which will start on ${from} end on ${to}.`,
+            `A new campaign has been created with the name: ${name.toUpperCase()} which will start on ${from} and end on ${to}.`,
           newCampaign.name,
           newCampaign.from,
           newCampaign.to,

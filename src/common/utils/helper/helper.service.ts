@@ -12,7 +12,7 @@ export class HelperService {
 
     const msg = {
       to,
-      from: 'collinsceleb@gmail.com',
+      from: this.configService.get<string>('SENDGRID_FROM_EMAIL'),
       subject,
       text,
     };
